@@ -1,61 +1,58 @@
 import 'package:flutter/material.dart';
 import '../models/product.dart';
-
-class CartItem {
-  final Product product;
-  int quantity;
-
-  CartItem({required this.product, required this.quantity});
-}
+import '../models/cart_item.dart';
 
 class CartProvider with ChangeNotifier {
-  // Map of product ID to CartItem
-  final Map<int, CartItem> _items = {};
+  Map<int, CartItem> _items = {};
 
   Map<int, CartItem> get items => _items;
 
-  // Total number of different products in the cart
-  int get itemCount => _items.length;
-
-  // Total price of all items
-  double get totalPrice {
-    return _items.values.fold(
-      0,
-      (sum, item) => sum + double.parse(item.product.price) * item.quantity,
-    );
-  }
-
-  // Add item to cart or increase quantity if already added
   void addToCart(Product product) {
-    if (product.id == null) return;
-
     if (_items.containsKey(product.id)) {
-      _items[product.id]!.quantity++;
+      _items.update(
+        product.id,
+        (existingItem) => CartItem(
+          product: existingItem.product,
+          quantity: existingItem.quantity + 1,
+        ),
+      );
     } else {
-      _items[product.id!] = CartItem(product: product, quantity: 1);
+      _items.putIfAbsent(
+        product.id,
+        () => CartItem(product: product, quantity: 1),
+      );
     }
     notifyListeners();
   }
 
-  // Remove item completely from cart
   void removeItem(int productId) {
     _items.remove(productId);
     notifyListeners();
   }
 
-  // Increase quantity of an item
   void incrementQuantity(int productId) {
     if (_items.containsKey(productId)) {
-      _items[productId]!.quantity++;
+      _items.update(
+        productId,
+        (existingItem) => CartItem(
+          product: existingItem.product,
+          quantity: existingItem.quantity + 1,
+        ),
+      );
       notifyListeners();
     }
   }
 
-  // Decrease quantity or remove item if quantity goes to 0
   void decrementQuantity(int productId) {
     if (_items.containsKey(productId)) {
       if (_items[productId]!.quantity > 1) {
-        _items[productId]!.quantity--;
+        _items.update(
+          productId,
+          (existingItem) => CartItem(
+            product: existingItem.product,
+            quantity: existingItem.quantity - 1,
+          ),
+        );
       } else {
         _items.remove(productId);
       }
@@ -63,9 +60,18 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  // Clear all items in the cart
+  double get totalPrice {
+    double total = 0.0;
+    _items.forEach((_, item) {
+      total += item.product.price * item.quantity;
+    });
+    return total;
+  }
+
+  int get itemCount => _items.length;
+
   void clearCart() {
-    _items.clear();
+    _items = {};
     notifyListeners();
   }
 }

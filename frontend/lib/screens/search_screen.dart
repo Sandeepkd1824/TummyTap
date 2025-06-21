@@ -1,20 +1,30 @@
 // lib/screens/search_screen.dart
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../services/api_service.dart';
 import '../widgets/product_card.dart';
-
+import '../providers/cart_provider.dart';
 
 class SearchScreen extends StatefulWidget {
+  const SearchScreen({super.key});
+
   @override
-  _SearchScreenState createState() => _SearchScreenState();
+  State<SearchScreen> createState() => _SearchScreenState();
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  late CartProvider cartProvider;
   List<Product> _products = [];
   List<Product> _filteredProducts = [];
   bool _isLoading = true;
-  String _query = '';
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    cartProvider = Provider.of<CartProvider>(context);
+  }
 
   @override
   void initState() {
@@ -36,7 +46,6 @@ class _SearchScreenState extends State<SearchScreen> {
         .where((p) => p.name.toLowerCase().contains(query.toLowerCase()))
         .toList();
     setState(() {
-      _query = query;
       _filteredProducts = results;
     });
   }
@@ -49,7 +58,7 @@ class _SearchScreenState extends State<SearchScreen> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.all(8.0),
             child: TextField(
               onChanged: _search,
               decoration: InputDecoration(
@@ -70,7 +79,11 @@ class _SearchScreenState extends State<SearchScreen> {
               : ListView.builder(
                   itemCount: _filteredProducts.length,
                   itemBuilder: (context, index) {
-                    return ProductCard(product: _filteredProducts[index]);
+                    return ProductCard(
+                      product: _filteredProducts[index],
+                      onAddToCart: () =>
+                          cartProvider.addToCart(_filteredProducts[index]),
+                    );
                   },
                 ),
     );

@@ -1,47 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../models/product.dart';
-import '../providers/cart_provider.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
+  final Function() onAddToCart;
 
-  const ProductCard({super.key, required this.product});
+  const ProductCard({
+    super.key,
+    required this.product,
+    required this.onAddToCart,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final cart = Provider.of<CartProvider>(context, listen: false);
-
     return Card(
-      elevation: 3,
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(10),
-        leading: Image.network(
-          product.image,
-          width: 60,
-          height: 60,
-          fit: BoxFit.cover,
-        ),
-        title: Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(product.description),
-            Text('₹${product.price}', style: const TextStyle(color: Colors.green)),
-            Text('Category: ${product.category.name}', style: const TextStyle(fontSize: 12)),
-          ],
-        ),
-        trailing: ElevatedButton(
-          onPressed: () {
-            cart.addToCart(product);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('${product.name} added to cart')),
-            );
-          },
-          child: const Text('Add'),
-        ),
+      elevation: 4,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (product.image.isNotEmpty)
+            Image.network(
+              product.image,
+              height: 120,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+            ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text('₹${product.price.toStringAsFixed(2)}'),
+          ),
+          ButtonBar(
+            alignment: MainAxisAlignment.end,
+            children: [
+              ElevatedButton(
+                onPressed: onAddToCart,
+                child: const Text('Add to Cart'),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

@@ -1,45 +1,42 @@
 import 'package:flutter/material.dart';
-import 'product_list_screen.dart';
-import 'cart_screen.dart';
-import 'search_screen.dart';
+import 'package:tummytap/screens/search_screen.dart';
+import 'package:tummytap/screens/cart_screen.dart';
+import 'package:tummytap/screens/category_screen.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key}); // Make this const if using const constructor
+
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+  int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    ProductListScreen(),
     SearchScreen(),
+    CategoryScreen(),
     CartScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.deepOrange,
+        currentIndex: _currentIndex,
         onTap: (index) {
-          setState(() => _selectedIndex = index);
+          setState(() {
+            _currentIndex = index;
+          });
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant_menu),
-            label: 'Home',
-          ),
+              icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
+              icon: Icon(Icons.category), label: 'Category'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Cart',
-          ),
+              icon: Icon(Icons.shopping_cart), label: 'Cart'),
         ],
       ),
     );
