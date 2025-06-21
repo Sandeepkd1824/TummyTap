@@ -17,6 +17,10 @@ android/captures/
 ios/Flutter/Flutter.framework
 ios/Flutter/Flutter.podspec
 *.iml
+pubspec.lock
+db.sqlite3
+
 
 # VSCode
 .vscode/
+
