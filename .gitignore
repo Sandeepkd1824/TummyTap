@@ -1,0 +1,21 @@
+# Python
+env/
+*.pyc
+__pycache__/
+
+# Django
+db.sqlite3
+
+# Flutter
+build/
+.dart_tool/
+.packages
+.flutter-plugins
+pubspec.lock
+
+# VSCode/IDE
+.idea/
+.vscode/
+
+# System
+.DS_Store
