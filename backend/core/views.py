@@ -3,11 +3,11 @@ from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.models import User
-
+from rest_framework.permissions import AllowAny
+from rest_framework.serializers import ModelSerializer
+from django.contrib.auth import get_user_model
 
 import random
-from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import OTPRequest
 from .serializers import OTPRequestSerializer, OTPVerifySerializer, UserSerializer
@@ -21,7 +21,7 @@ from .serializers import (
     OrderSerializer, OrderItemSerializer, CustomerAddressSerializer,
     ProductReviewSerializer
 )
-
+User = get_user_model()
 
 # ---------- CATEGORY ----------
 class CategoryListAPIView(generics.ListAPIView):
@@ -218,3 +218,23 @@ class VerifyOTPView(APIView):
             except OTPRequest.DoesNotExist:
                 return Response({'error': 'Invalid OTP'}, status=400)
         return Response(serializer.errors, status=400)
+    
+
+class RegisterSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password')
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data.get('email'),
+            password=validated_data['password']
+        )
+        return user
+
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializer
+    permission_classes = [AllowAny]

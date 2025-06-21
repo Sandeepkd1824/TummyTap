@@ -1,6 +1,17 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth.models import AbstractUser
+
+class CustomUser(AbstractUser):
+    email = models.EmailField(unique=True, null=True, blank=True)
+    phone_number = models.CharField(max_length=15, unique=True, null=True, blank=True)
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email', 'phone_number']
+
+    def __str__(self):
+        return self.username
 
 
 class Category(models.Model):
@@ -26,20 +37,14 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=8, decimal_places=2)
     image = models.URLField(blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
-    restaurant = models.ForeignKey(
-        Restaurant,
-        on_delete=models.CASCADE,
-        related_name="products",
-        null=True,  # allow null for now
-        blank=True  # allow blank in admin form
-    )
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name="products", null=True, blank=True)
 
     def __str__(self):
         return self.name
 
 
 class CustomerAddress(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     label = models.CharField(max_length=100, default='Home')  # Home / Work / Other
     address = models.TextField()
     city = models.CharField(max_length=100)
@@ -62,7 +67,7 @@ class Order(models.Model):
         ('cancelled', 'Cancelled'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     address = models.ForeignKey(CustomerAddress, on_delete=models.SET_NULL, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -82,7 +87,7 @@ class OrderItem(models.Model):
 
 
 class DeliveryPerson(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     is_available = models.BooleanField(default=True)
     phone = models.CharField(max_length=15)
     current_location = models.CharField(max_length=255, blank=True, null=True)
@@ -98,7 +103,7 @@ class Payment(models.Model):
     ]
     order = models.OneToOneField(Order, on_delete=models.CASCADE)
     method = models.CharField(max_length=30, choices=METHOD_CHOICES)
-    status = models.CharField(max_length=30, default='pending')  # 'pending', 'completed', 'failed'
+    status = models.CharField(max_length=30, default='pending')
     transaction_id = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -118,7 +123,7 @@ class OrderTracking(models.Model):
 
 
 class ProductReview(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     rating = models.IntegerField()  # 1 to 5
     comment = models.TextField(blank=True)
@@ -126,7 +131,7 @@ class ProductReview(models.Model):
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     ROLE_CHOICES = (
         ('customer', 'Customer'),
         ('delivery', 'Delivery Person'),
@@ -156,13 +161,13 @@ class OrderStatusHistory(models.Model):
 
 
 class Favorite(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     added_at = models.DateTimeField(auto_now_add=True)
 
 
 class SupportTicket(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     subject = models.CharField(max_length=255)
     message = models.TextField()
     is_resolved = models.BooleanField(default=False)
@@ -175,8 +180,9 @@ class RestaurantHours(models.Model):
     opens_at = models.TimeField()
     closes_at = models.TimeField()
 
+
 class Cart(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="cart")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="cart")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -197,7 +203,8 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"
-    
+
+
 class OTPRequest(models.Model):
     mobile = models.CharField(max_length=15, unique=True)
     otp = models.CharField(max_length=6)
@@ -206,5 +213,3 @@ class OTPRequest(models.Model):
 
     def is_expired(self):
         return timezone.now() > self.created_at + timezone.timedelta(minutes=5)
-
-

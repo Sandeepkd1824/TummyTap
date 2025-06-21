@@ -1,11 +1,14 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from .models import (
     Category, Product, CustomerAddress, Order, OrderItem, Restaurant,
     DeliveryPerson, Payment, OrderTracking, ProductReview, UserProfile,
-    Coupon, OrderStatusHistory, Favorite, SupportTicket, RestaurantHours, CartItem, Cart
+    Coupon, OrderStatusHistory, Favorite, SupportTicket, RestaurantHours, CartItem, Cart, OTPRequest
 )
 
+User = get_user_model()
+
+# OTP
 class OTPRequestSerializer(serializers.Serializer):
     mobile = serializers.CharField(max_length=15)
 
@@ -13,10 +16,12 @@ class OTPVerifySerializer(serializers.Serializer):
     mobile = serializers.CharField()
     otp = serializers.CharField()
 
+
+# User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name']
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'phone_number']
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -27,18 +32,21 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'role']
 
 
+# Category
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name']
 
 
+# Restaurant
 class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Restaurant
         fields = ['id', 'name', 'address', 'is_active', 'created_at']
 
 
+# Product
 class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     restaurant = RestaurantSerializer(read_only=True)
@@ -48,6 +56,7 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'price', 'image', 'category', 'restaurant']
 
 
+# Address
 class CustomerAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerAddress
@@ -57,6 +66,7 @@ class CustomerAddressSerializer(serializers.ModelSerializer):
         ]
 
 
+# Order Items
 class OrderItemSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
 
@@ -65,6 +75,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = ['id', 'product', 'quantity']
 
 
+# Order
 class OrderSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     address = CustomerAddressSerializer(read_only=True)
@@ -75,6 +86,7 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'address', 'status', 'total_price', 'created_at', 'items']
 
 
+# Delivery Person
 class DeliveryPersonSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
 
@@ -83,6 +95,7 @@ class DeliveryPersonSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'is_available', 'phone', 'current_location']
 
 
+# Payment
 class PaymentSerializer(serializers.ModelSerializer):
     order = serializers.PrimaryKeyRelatedField(read_only=True)
 
@@ -91,6 +104,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         fields = ['id', 'order', 'method', 'status', 'transaction_id', 'created_at']
 
 
+# Order Tracking
 class OrderTrackingSerializer(serializers.ModelSerializer):
     order = serializers.PrimaryKeyRelatedField(read_only=True)
 
@@ -99,6 +113,7 @@ class OrderTrackingSerializer(serializers.ModelSerializer):
         fields = ['id', 'order', 'current_status', 'updated_at']
 
 
+# Review
 class ProductReviewSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     product = ProductSerializer(read_only=True)
@@ -108,18 +123,21 @@ class ProductReviewSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'product', 'rating', 'comment', 'created_at']
 
 
+# Coupons
 class CouponSerializer(serializers.ModelSerializer):
     class Meta:
         model = Coupon
         fields = ['id', 'code', 'discount_amount', 'valid_from', 'valid_to', 'is_active']
 
 
+# Order Status History
 class OrderStatusHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderStatusHistory
         fields = ['id', 'order', 'status', 'timestamp']
 
 
+# Favorites
 class FavoriteSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
 
@@ -128,6 +146,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'product', 'added_at']
 
 
+# Support Tickets
 class SupportTicketSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
 
@@ -136,6 +155,7 @@ class SupportTicketSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'subject', 'message', 'is_resolved', 'created_at']
 
 
+# Restaurant Hours
 class RestaurantHoursSerializer(serializers.ModelSerializer):
     restaurant = RestaurantSerializer(read_only=True)
 
@@ -143,6 +163,8 @@ class RestaurantHoursSerializer(serializers.ModelSerializer):
         model = RestaurantHours
         fields = ['id', 'restaurant', 'day_of_week', 'opens_at', 'closes_at']
 
+
+# Cart and Cart Items
 class CartItemSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
     product_id = serializers.PrimaryKeyRelatedField(
@@ -161,4 +183,3 @@ class CartSerializer(serializers.ModelSerializer):
         model = Cart
         fields = ['id', 'user', 'items', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
-

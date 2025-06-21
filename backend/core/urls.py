@@ -3,7 +3,7 @@ from .views import (
     CategoryListAPIView, ProductListAPIView, CartView, AddToCartView,
     RemoveFromCartView, CustomerAddressListCreateView, PlaceOrderView,
     OrderListView, ProductReviewCreateView, FavoriteToggleView,
-    ApplyCouponView, RequestOTPView, VerifyOTPView
+    ApplyCouponView, RequestOTPView, VerifyOTPView, RegisterView
 )
 
 urlpatterns = [
@@ -26,4 +26,5 @@ urlpatterns = [
 
     path('auth/request-otp/', RequestOTPView.as_view()),
     path('auth/verify-otp/', VerifyOTPView.as_view()),
+    path('register/', RegisterView.as_view(), name='register'),
 ]
