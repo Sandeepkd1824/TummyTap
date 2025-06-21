@@ -3,19 +3,20 @@ env/
 *.pyc
 __pycache__/
 
-# Django
-db.sqlite3
-
 # Flutter
 build/
 .dart_tool/
-.packages
 .flutter-plugins
-pubspec.lock
-
-# VSCode/IDE
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
 .idea/
-.vscode/
+android/.gradle/
+android/captures/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+*.iml
 
-# System
-.DS_Store
+# VSCode
+.vscode/
